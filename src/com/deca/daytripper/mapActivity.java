@@ -251,7 +251,7 @@ public class mapActivity extends MapActivity {
 	protected boolean isRouteDisplayed() {
 		return false;
 	}
-
+//hello
 	class MyLocations extends ItemizedOverlay<OverlayItem> {
 
 		private List<OverlayItem> locations = new ArrayList<OverlayItem>();
