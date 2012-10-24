@@ -3,13 +3,14 @@ package com.deca.daytripper;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,9 +22,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import android.location.Location;
-import android.location.Geocoder;
 import android.location.LocationListener;
 import android.location.LocationManager;
 
@@ -33,8 +31,6 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.OverlayItem;
-import com.google.android.maps.Projection;
-import com.google.android.maps.Overlay;
 
 public class mapActivity extends MapActivity {
 	// Menu선언
@@ -46,7 +42,7 @@ public class mapActivity extends MapActivity {
 	boolean tripStatus = false;
 	int log = 0;
 
-	double startLatitude, startLongitude, endLatitude, endLongitude,
+	int startLatitude, startLongitude, endLatitude, endLongitude,
 			currentLatitude, currentLongitude;
 
 	LocationManager locManager;
@@ -117,7 +113,8 @@ public class mapActivity extends MapActivity {
 				startLongitude = myLocationOverlay.getMyLocation()
 						.getLongitudeE6();
 				startDialog();
-				addMarker((int)startLatitude, (int)startLongitude);
+				addMarker();
+
 			}
 			tripStatus = true;
 
@@ -132,8 +129,8 @@ public class mapActivity extends MapActivity {
 				endLatitude = myLocationOverlay.getMyLocation().getLatitudeE6();
 				endLongitude = myLocationOverlay.getMyLocation()
 						.getLongitudeE6();
-
 				tripStatus = false;
+
 			}
 			// 넘기는거 text파일이나 root로 파일을 저장
 			// 오버레이싹지우기
@@ -152,7 +149,7 @@ public class mapActivity extends MapActivity {
 
 				GeoPoint geopoint = new GeoPoint((int) currentLatitude,
 						(int) currentLongitude);
-				addMarker((int) currentLatitude, (int) currentLongitude);
+				addMarker();
 				logDialog();
 			}
 			break;
@@ -175,13 +172,13 @@ public class mapActivity extends MapActivity {
 		myLocationOverlay.disableMyLocation();
 	}
 
-	private void addMarker(int markerLattitude, int markerLongitude) {
+	private void addMarker() {
 		Drawable marker = getResources().getDrawable(R.drawable.ic_marker);
 		marker.setBounds(0, 0, marker.getIntrinsicWidth(),
 				marker.getIntrinsicHeight());
 
 		mapView.getOverlays().add(
-				new MyLocations(marker, markerLattitude, markerLongitude));
+				new MyLocations(marker, currentLatitude, currentLongitude));
 	}
 
 	private void startDialog() {
@@ -200,8 +197,9 @@ public class mapActivity extends MapActivity {
 				.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						Toast.makeText(mapActivity.this, trip_Title.getText()
-								.toString() + "가 시작되었습니다.", Toast.LENGTH_LONG);
+						Toast.makeText(mapActivity.this,
+								trip_Title.getText().toString() + "가 시작되었습니다.",
+								Toast.LENGTH_LONG).show();
 
 					}
 				})
@@ -209,7 +207,7 @@ public class mapActivity extends MapActivity {
 
 					public void onClick(DialogInterface dialog, int which) {
 						Toast.makeText(mapActivity.this, "여행이 취소되엇습니다",
-								Toast.LENGTH_LONG);
+								Toast.LENGTH_LONG).show();
 
 					}
 				}).show();
@@ -217,16 +215,19 @@ public class mapActivity extends MapActivity {
 
 	private void logDialog() {
 		LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout dialog_log = (LinearLayout) vi.inflate(R.layout.dialog_log, null);
-		
-		ImageView cameraButton = (ImageView) findViewById(R.id.camera);
-		cameraButton.setOnClickListener(new OnClickListener(){
-			public void onClick(View v){
-				
+		LinearLayout dialog_log = (LinearLayout) vi.inflate(
+				R.layout.dialog_log, null);
+
+		ImageView cameraButton = (ImageView) dialog_log
+				.findViewById(R.id.camera);
+		cameraButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
 			}
 		});
-		
-		
+
 		final EditText trip_context = (EditText) dialog_log
 				.findViewById(R.id.tripContext);
 
@@ -235,14 +236,12 @@ public class mapActivity extends MapActivity {
 
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
-
 					}
 				})
 				.setNegativeButton("취소", new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
-
 					}
 				}).show();
 	}
@@ -251,7 +250,8 @@ public class mapActivity extends MapActivity {
 	protected boolean isRouteDisplayed() {
 		return false;
 	}
-//hello
+
+	// hello
 	class MyLocations extends ItemizedOverlay<OverlayItem> {
 
 		private List<OverlayItem> locations = new ArrayList<OverlayItem>();
