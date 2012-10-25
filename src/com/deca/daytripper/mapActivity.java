@@ -113,7 +113,7 @@ public class mapActivity extends MapActivity {
 				startLongitude = myLocationOverlay.getMyLocation()
 						.getLongitudeE6();
 				startDialog();
-				addMarker();
+				addMarker(startLatitude, startLongitude);
 
 			}
 			tripStatus = true;
@@ -149,7 +149,7 @@ public class mapActivity extends MapActivity {
 
 				GeoPoint geopoint = new GeoPoint((int) currentLatitude,
 						(int) currentLongitude);
-				addMarker();
+				addMarker(currentLatitude, currentLatitude);
 				logDialog();
 			}
 			break;
@@ -172,15 +172,6 @@ public class mapActivity extends MapActivity {
 		myLocationOverlay.disableMyLocation();
 	}
 
-	private void addMarker() {
-		Drawable marker = getResources().getDrawable(R.drawable.ic_marker);
-		marker.setBounds(0, 0, marker.getIntrinsicWidth(),
-				marker.getIntrinsicHeight());
-
-		mapView.getOverlays().add(
-				new MyLocations(marker, currentLatitude, currentLongitude));
-	}
-
 	private void startDialog() {
 		LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout dialog_start = (LinearLayout) vi.inflate(
@@ -200,7 +191,7 @@ public class mapActivity extends MapActivity {
 						Toast.makeText(mapActivity.this,
 								trip_Title.getText().toString() + "가 시작되었습니다.",
 								Toast.LENGTH_LONG).show();
-
+						
 					}
 				})
 				.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -242,29 +233,38 @@ public class mapActivity extends MapActivity {
 
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+
 					}
 				}).show();
+		
 	}
-
+	private void addMarker(int markerLatitude, int markerLongitude){
+		Drawable marker = getResources().getDrawable(R.drawable.ic_marker);
+		marker.setBounds(0, 0, marker.getIntrinsicWidth(), marker.getIntrinsicHeight());
+		
+		mapView.getOverlays().add(new MyLocations(marker, markerLatitude, markerLongitude));
+	}
+		
 	@Override
 	protected boolean isRouteDisplayed() {
 		return false;
 	}
 
-	// hello
 	class MyLocations extends ItemizedOverlay<OverlayItem> {
-
-		private List<OverlayItem> locations = new ArrayList<OverlayItem>();
+		private ArrayList<OverlayItem> locations = new ArrayList<OverlayItem>();
 		private Drawable marker;
-		private OverlayItem myOverlayItem;
+		private OverlayItem mOverlayItem;
 
-		public MyLocations(Drawable marker, int latitudeE6, int longitudeE6) {
+		public MyLocations(Drawable marker, int latitudeE6,
+				int longitudeE6) {
 			super(marker);
 			this.marker = marker;
 
 			GeoPoint myPlace = new GeoPoint(latitudeE6, longitudeE6);
-			myOverlayItem = new OverlayItem(myPlace, "", "");
-			locations.add(myOverlayItem);
+
+			mOverlayItem = new OverlayItem(myPlace, "", "");
+			locations.add(mOverlayItem);
+
 			populate();
 
 		}
@@ -272,15 +272,16 @@ public class mapActivity extends MapActivity {
 		@Override
 		protected OverlayItem createItem(int i) {
 			return locations.get(i);
+			// number of items in the array list
 		}
 
 		@Override
 		public int size() {
 			return locations.size();
 		}
-
 		@Override
-		public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+		public void draw(Canvas canvas, MapView mapView, boolean shadow){
+			super.draw(canvas, mapView, shadow);
 			boundCenterBottom(marker);
 		}
 	}
