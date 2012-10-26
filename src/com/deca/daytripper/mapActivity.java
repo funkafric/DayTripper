@@ -1,5 +1,7 @@
 package com.deca.daytripper;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,7 +51,7 @@ public class mapActivity extends MapActivity {
 
 	LocationManager locManager;
 	LocationListener locListener;
-
+//
 	MapView mapView = null;
 	MyLocationOverlay myLocationOverlay;
 
@@ -88,6 +92,7 @@ public class mapActivity extends MapActivity {
 
 	}
 
+	//
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, MENU_START, Menu.NONE, "여행시작");
 		menu.add(Menu.NONE, MENU_END, Menu.NONE, "여행 끗");
@@ -171,7 +176,11 @@ public class mapActivity extends MapActivity {
 
 		myLocationOverlay.disableMyLocation();
 	}
-
+	@Override
+	protected boolean isRouteDisplayed() {
+		return false;
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////////
 	private void startDialog() {
 		LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout dialog_start = (LinearLayout) vi.inflate(
@@ -191,7 +200,7 @@ public class mapActivity extends MapActivity {
 						Toast.makeText(mapActivity.this,
 								trip_Title.getText().toString() + "가 시작되었습니다.",
 								Toast.LENGTH_LONG).show();
-						
+
 					}
 				})
 				.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -213,9 +222,44 @@ public class mapActivity extends MapActivity {
 				.findViewById(R.id.camera);
 		cameraButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+
 				Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(intent);
+
+				String path = "/mnt/sdcard/AppData/DayTripper";
+
+				File file = new File(path, "test_Img.jpg");
+
+				if (!file.exists())
+					file.mkdirs();
+				Uri uri = Uri.fromFile(file);
+				intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri);
+
+				startActivityForResult(intent, 0);
+
+			}
+
+			public void onActivityResult(int request_code, int result_code,	Intent data) {
+				if (request_code == 00 && result_code == RESULT_OK) {
+					try {
+						File path = Environment
+								.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+						File file = new File(path, "test_img.jpg");
+
+						FileInputStream input_stream = new FileInputStream(file);
+
+						// mageView img_view =
+						// (ImageView)findViewById(R.id.camera);
+						// img_view.setImageDrawable(null);
+						// img_view.setImageDrawable(Drawable.createFromStream(input_stream,
+						// "image.jpg");
+						// input_stream.close();
+
+						System.gc();
+
+					} catch (Exception ie) {
+
+					}
+				}
 			}
 		});
 
@@ -226,28 +270,25 @@ public class mapActivity extends MapActivity {
 				.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
+
 					}
 				})
 				.setNegativeButton("취소", new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
 
 					}
 				}).show();
-		
+
 	}
-	private void addMarker(int markerLatitude, int markerLongitude){
+
+	private void addMarker(int markerLatitude, int markerLongitude) {
 		Drawable marker = getResources().getDrawable(R.drawable.ic_marker);
-		marker.setBounds(0, 0, marker.getIntrinsicWidth(), marker.getIntrinsicHeight());
-		
-		mapView.getOverlays().add(new MyLocations(marker, markerLatitude, markerLongitude));
-	}
-		
-	@Override
-	protected boolean isRouteDisplayed() {
-		return false;
+		marker.setBounds(0, 0, marker.getIntrinsicWidth(),
+				marker.getIntrinsicHeight());
+
+		mapView.getOverlays().add(
+				new MyLocations(marker, markerLatitude, markerLongitude));
 	}
 
 	class MyLocations extends ItemizedOverlay<OverlayItem> {
@@ -255,8 +296,7 @@ public class mapActivity extends MapActivity {
 		private Drawable marker;
 		private OverlayItem mOverlayItem;
 
-		public MyLocations(Drawable marker, int latitudeE6,
-				int longitudeE6) {
+		public MyLocations(Drawable marker, int latitudeE6, int longitudeE6) {
 			super(marker);
 			this.marker = marker;
 
@@ -266,7 +306,6 @@ public class mapActivity extends MapActivity {
 			locations.add(mOverlayItem);
 
 			populate();
-
 		}
 
 		@Override
@@ -279,8 +318,9 @@ public class mapActivity extends MapActivity {
 		public int size() {
 			return locations.size();
 		}
+
 		@Override
-		public void draw(Canvas canvas, MapView mapView, boolean shadow){
+		public void draw(Canvas canvas, MapView mapView, boolean shadow) {
 			super.draw(canvas, mapView, shadow);
 			boundCenterBottom(marker);
 		}
